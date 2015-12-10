@@ -56,27 +56,40 @@ indoor_co2s_zipaurl = ZIPABOX_URL % (ZIPABOX_SERIAL, SENSOR_EP, SENSOR_APIKEY, '
 
 # Read the most recent values from Netatmo
 print ('Reading from Netatmo...')
-authorization = lnetatmo.ClientAuth()
-devList = lnetatmo.DeviceList(authorization)
-indoor_temp_value   = "%.2f" % devList.lastData()[indoor_modl_name][indoor_temp_sensor]
-indoor_humi_value   = "%.2f" % devList.lastData()[indoor_modl_name][indoor_humi_sensor]
-indoor_co2l_value   = "%.2f" % devList.lastData()[indoor_modl_name][indoor_co2l_sensor]
-indoor_co2s_value   = '1' if devList.lastData()[indoor_modl_name][indoor_co2l_sensor] > indoor_co2l_limit else '0'
-indoor_pres_value   = "%.2f" % devList.lastData()[indoor_modl_name][indoor_pres_sensor]
-indoor_sndl_value   = "%.2f" % devList.lastData()[indoor_modl_name][indoor_sndl_sensor]
-oudoor_temp_value   = "%.2f" % devList.lastData()[oudoor_modl_name][oudoor_temp_sensor]
-oudoor_humi_value   = "%.2f" % devList.lastData()[oudoor_modl_name][oudoor_humi_sensor]
+try:
+    authorization = lnetatmo.ClientAuth()
+    if authorization is None:
+        print 'Failed to authenticate with Netatmo! Time to check your credentials in lnetatmo.py may be?'
+    else:
+        try:
+            devList = lnetatmo.DeviceList(authorization)
+            if devList is None:
+                print 'Failed reading Netatmo :('
+            else:
+                indoor_temp_value   = "%.2f" % devList.lastData()[indoor_modl_name][indoor_temp_sensor]
+                indoor_humi_value   = "%.2f" % devList.lastData()[indoor_modl_name][indoor_humi_sensor]
+                indoor_co2l_value   = "%.2f" % devList.lastData()[indoor_modl_name][indoor_co2l_sensor]
+                indoor_co2s_value   = '1' if devList.lastData()[indoor_modl_name][indoor_co2l_sensor] > indoor_co2l_limit else '0'
+                indoor_pres_value   = "%.2f" % devList.lastData()[indoor_modl_name][indoor_pres_sensor]
+                indoor_sndl_value   = "%.2f" % devList.lastData()[indoor_modl_name][indoor_sndl_sensor]
+                oudoor_temp_value   = "%.2f" % devList.lastData()[oudoor_modl_name][oudoor_temp_sensor]
+                oudoor_humi_value   = "%.2f" % devList.lastData()[oudoor_modl_name][oudoor_humi_sensor]
 
-print ('Pushing to Zipabox...')
-# Write the parameters to Zipabox Virtual Meter and Virtual Sensor
-urlopen(indoor_temp_zipaurl + indoor_temp_value)
-urlopen(indoor_humi_zipaurl + indoor_humi_value)
-urlopen(indoor_co2l_zipaurl + indoor_co2l_value)
-urlopen(indoor_co2s_zipaurl + indoor_co2s_value)
-urlopen(indoor_pres_zipaurl + indoor_pres_value)
-urlopen(indoor_sndl_zipaurl + indoor_sndl_value)
-urlopen(oudoor_temp_zipaurl + oudoor_temp_value)
-urlopen(oudoor_humi_zipaurl + oudoor_humi_value)
-print ('Zipabox successfully updated')
-
-
+                # Write the parameters to Zipabox Virtual Meter and Virtual Sensor
+                print 'Pushing to Zipabox...'
+                try:
+                    urlopen(indoor_temp_zipaurl + indoor_temp_value)
+                    urlopen(indoor_humi_zipaurl + indoor_humi_value)
+                    urlopen(indoor_co2l_zipaurl + indoor_co2l_value)
+                    urlopen(indoor_co2s_zipaurl + indoor_co2s_value)
+                    urlopen(indoor_pres_zipaurl + indoor_pres_value)
+                    urlopen(indoor_sndl_zipaurl + indoor_sndl_value)
+                    urlopen(oudoor_temp_zipaurl + oudoor_temp_value)
+                    urlopen(oudoor_humi_zipaurl + oudoor_humi_value)
+                    print 'Zipabox successfully updated :)'
+                except Exception, e:
+                    print 'Could not update Zipabox :(. ' + str(e)
+        except Exception, e:
+            print 'Failed reading Netatmo :(. ' + str(e)
+except Exception, e:
+    print 'Failed to authenticate with Netatmo! Time to check your credentials in lnetatmo.py may be? ' + str(e)
